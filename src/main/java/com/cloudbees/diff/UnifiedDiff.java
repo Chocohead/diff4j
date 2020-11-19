@@ -40,8 +40,6 @@
  */
 package com.cloudbees.diff;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.*;
 import java.util.List;
 
@@ -99,7 +97,7 @@ final class UnifiedDiff {
     
     private BufferedReader checkEndingNewline(Reader reader, boolean isBase) throws IOException {
         StringWriter sw = new StringWriter();
-        copyStreamsCloseAll(sw, reader);
+        IOUtils.copyStreamsCloseAll(sw, reader);
         String s = sw.toString();
         char endingChar = s.length() == 0 ? 0 : s.charAt(s.length() - 1);
         if (isBase) {
@@ -231,11 +229,5 @@ final class UnifiedDiff {
             buffer.append(line);
             buffer.append(newline);
         }
-    }
-
-    private static void copyStreamsCloseAll(Writer writer, Reader reader) throws IOException {
-        IOUtils.copy(reader,writer);
-        writer.close();
-        reader.close();
     }
 }

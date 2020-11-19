@@ -43,17 +43,13 @@ package com.cloudbees.diff;
 import com.cloudbees.diff.Hunk;
 import com.cloudbees.diff.PatchException;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -170,7 +166,7 @@ public final class ContextualPatch {
             }
             return report;
         } finally {
-            if (patchReader != null) try { patchReader.close(); } catch (IOException e) {}
+            IOUtils.closeQuietly(patchReader);
         }
     }
 
@@ -233,22 +229,12 @@ public final class ContextualPatch {
 
     void backup(File target) throws IOException {
         if (target.exists()) {
-            copyStreamsCloseAll(new FileOutputStream(computeBackup(target)), new FileInputStream(target));
+            IOUtils.copyStreamsCloseAll(new FileOutputStream(computeBackup(target)), new FileInputStream(target));
         }
     }
 
     private File computeBackup(File target) {
         return new File(target.getParentFile(), target.getName() + ".original~");
-    }
-
-    private void copyStreamsCloseAll(OutputStream writer, InputStream reader) throws IOException {
-        byte [] buffer = new byte[4096];
-        int n;
-        while ((n = reader.read(buffer)) != -1) {
-            writer.write(buffer, 0, n);
-        }
-        writer.close();
-        reader.close();
     }
 
     void writeFile(SinglePatch patch, List<String> lines) throws IOException {
@@ -263,12 +249,13 @@ public final class ContextualPatch {
                 patch.targetFile.delete();
             } else {
                 byte [] content = Base64.decode(patch.hunks[0].lines);
-                copyStreamsCloseAll(new FileOutputStream(patch.targetFile), new ByteArrayInputStream(content));
+                IOUtils.copyStreamsCloseAll(new FileOutputStream(patch.targetFile), new ByteArrayInputStream(content));
             }
         } else {
+            if (lines.size() == 0) return;
+
             PrintWriter w = new PrintWriter(new OutputStreamWriter(new FileOutputStream(patch.targetFile), getEncoding(patch.targetFile))); 
             try {
-                if (lines.size() == 0) return;
                 for (String line : lines.subList(0, lines.size() - 1)) {
                     w.println(line);
                 }

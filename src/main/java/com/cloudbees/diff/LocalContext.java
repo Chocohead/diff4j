@@ -21,8 +21,6 @@ package com.cloudbees.diff;
 
 import com.cloudbees.diff.ContextualPatch.SinglePatch;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;

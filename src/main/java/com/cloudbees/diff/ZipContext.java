@@ -3,12 +3,12 @@ package com.cloudbees.diff;
 import com.cloudbees.diff.ContextualPatch.Mode;
 import com.cloudbees.diff.ContextualPatch.SinglePatch;
 
-import org.apache.commons.io.IOUtils;
-
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -45,7 +45,16 @@ public class ZipContext implements PatchContextProvider {
 
         InputStream input = zip.getInputStream(entry);
         try {
-        	return IOUtils.readLines(input, "utf8");
+        	BufferedReader reader = new BufferedReader(new InputStreamReader(input, "utf8"));
+            List<String> lines = new ArrayList<String>();
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+
+            IOUtils.closeQuietly(reader);
+            return lines;
         } finally {
         	IOUtils.closeQuietly(input);
         }
@@ -116,7 +125,7 @@ public class ZipContext implements PatchContextProvider {
             } else {
             	InputStream ein = zip.getInputStream(zip.getEntry(key));
             	try {
-                    IOUtils.copy(ein, out);
+                    IOUtils.copy(out, ein);
                 } finally {
 					IOUtils.closeQuietly(ein);
 				}

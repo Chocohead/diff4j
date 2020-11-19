@@ -1,7 +1,5 @@
 package com.cloudbees.diff;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
