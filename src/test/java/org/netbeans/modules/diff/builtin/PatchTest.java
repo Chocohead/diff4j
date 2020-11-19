@@ -2,6 +2,8 @@ package org.netbeans.modules.diff.builtin;
 
 import com.cloudbees.diff.ContextualPatch;
 import com.cloudbees.diff.ContextualPatch.PatchReport;
+import com.cloudbees.diff.PatchFile;
+
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -22,7 +24,7 @@ public class PatchTest extends TestCase {
         File b = File.createTempFile("test", "base");
         FileUtils.copyURLToFile(getClass().getResource("base.txt"),b);
 
-        ContextualPatch patch = ContextualPatch.create(p, b);
+        ContextualPatch patch = ContextualPatch.create(PatchFile.from(p), b);
         List<PatchReport> report = patch.patch(false);
 
         assertEquals(resourceAsString("after.txt"), FileUtils.readFileToString(b));
@@ -37,7 +39,7 @@ public class PatchTest extends TestCase {
         File p = File.createTempFile("test", "diff");
         FileUtils.copyURLToFile(getClass().getResource("multifile/multiFilePatch.diff"),p);
 
-        ContextualPatch patch = ContextualPatch.create(p,d);
+        ContextualPatch patch = ContextualPatch.create(PatchFile.from(p), d);
         List<PatchReport> report = patch.patch(false);
         System.out.println(report);
 
@@ -54,7 +56,7 @@ public class PatchTest extends TestCase {
         File b = File.createTempFile("test", "base");
         FileUtils.copyURLToFile(getClass().getResource("simple.txt"),b);
 
-        ContextualPatch patch = ContextualPatch.create(p, b);
+        ContextualPatch patch = ContextualPatch.create(PatchFile.from(p), b);
         List<PatchReport> report = patch.patch(false);
 
         assertTrue(report.size() == 1);
@@ -62,7 +64,7 @@ public class PatchTest extends TestCase {
         for (ContextualPatch.PatchReport r : report) {
             Throwable failure = r.getFailure();
             if (failure != null)
-            	fail ("Failed to patch " + r.getFile());
+            	fail ("Failed to patch " + r.getTarget());
         }
 
         assertFalse(b.exists());
@@ -74,7 +76,7 @@ public class PatchTest extends TestCase {
         File p = File.createTempFile("test", "diff");
         FileUtils.copyURLToFile(getClass().getResource("singleFileAddWithTimestamp.diff"),p);
 
-        ContextualPatch patch = ContextualPatch.create(p,d);
+        ContextualPatch patch = ContextualPatch.create(PatchFile.from(p), d);
         List<PatchReport> report = patch.patch(false);
         System.out.println(report);
 
@@ -89,11 +91,11 @@ public class PatchTest extends TestCase {
         File tmpFile = File.createTempFile("before", "dat");
         FileUtils.copyURLToFile(getClass().getResource("/data/utf8/before.txt"),tmpFile);
 
-        ContextualPatch patch = ContextualPatch.create(diff,tmpFile, StandardCharsets.UTF_8);
+        ContextualPatch patch = ContextualPatch.create(PatchFile.from(diff, StandardCharsets.UTF_8), tmpFile);
         List<PatchReport> reports = patch.patch(false);
         for (PatchReport r : reports) {
             if (r.getFailure()!=null)
-                throw new IOException("Failed to patch " + r.getFile(), r.getFailure());
+                throw new IOException("Failed to patch " + r.getTarget(), r.getFailure());
         }
         assertEquals(resourceAsString("/data/utf8/after.txt"), FileUtils.readFileToString(tmpFile));
     }
